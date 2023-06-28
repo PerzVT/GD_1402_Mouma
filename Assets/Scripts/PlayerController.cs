@@ -128,7 +128,7 @@ public class PlayerController : MonoBehaviour
 
     private void UpdatePointsText()
     {
-        pointsText.text = $"Coins: <color=orange>{pointsCounter} / {pointsObjective} </color>";
+        pointsText.text = $"Coins: <color=green>{pointsCounter} / {pointsObjective} </color>";
     }
 
     private void UpdateGroundedStatus()
@@ -281,7 +281,7 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateHealthText()
     {
-        healthText.text = $"Health: <color=orange>{currentHealth}</color>";
+        healthText.text = $"Health: <color=green>{currentHealth}</color>";
     }
 
     public void TakeDamage(int damage)

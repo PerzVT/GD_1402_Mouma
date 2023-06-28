@@ -29,6 +29,6 @@ public class Timer : MonoBehaviour
     // Set the timer text with a formatted string
     private void UpdateTimerText(string formattedTime)
     {
-        timerText.text = $"Timer: <color=orange>{formattedTime}</color>";
+        timerText.text = $"Timer: <color=green>{formattedTime}</color>";
     }
 }
