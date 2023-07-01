@@ -76,6 +76,10 @@ public class PlayerController : MonoBehaviour
     private int currentHealth;
     private float originalSpeed;
 
+    //Animator
+    [SerializeField] private Animator animator;
+
+
     private void Start()
     {
         InitializeComponents();
@@ -85,6 +89,9 @@ public class PlayerController : MonoBehaviour
         UpdateHealthText();
         // Initialize the original speed value with the starting speed
         originalSpeed = moveSpeed;
+
+        //Animator
+        animator = GetComponent<Animator>();
     }
 
     private void Update()
@@ -111,6 +118,12 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         ApplyMovementForce();
+
+        // Update animator parameters
+        animator.SetBool("IsWalking", isGrounded && (horizontalMovement != 0f || verticalMovement != 0f));
+
+        float speed = Mathf.Max(Mathf.Abs(horizontalMovement), Mathf.Abs(verticalMovement));
+        animator.SetFloat("Speed", speed);
     }
 
     private void InitializeComponents()
@@ -191,6 +204,9 @@ public class PlayerController : MonoBehaviour
             rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
             rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
             jumpAudio.Play();
+
+            // Trigger jump animation
+            animator.SetTrigger("Jump");
         }
     }
 
