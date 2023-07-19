@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Default Material Palette
   m_EditorClassIdentifier: 
   array:
+<<<<<<< HEAD
   - {fileID: 2100000, guid: c22777d6e868e4f2fb421913386b154e, type: 2}
   - {fileID: -3035101939719975992, guid: b70068d27c49a224fabfdad623dd0b6d, type: 3}
   - {fileID: 2100000, guid: d3bd7ce420016ea4aa91fc3437e34225, type: 2}
@@ -23,3 +24,15 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+=======
+  - {fileID: 2100000, guid: 1401aa1afe062bf4f96531eed127ef37, type: 2}
+  - {fileID: 2100000, guid: bbe727cf9dedca64996187078c90f7d1, type: 2}
+  - {fileID: 2100000, guid: 1de44f992c333ef49b90effbb58479cb, type: 2}
+  - {fileID: 2100000, guid: b153ac5dd04d1584b934bc7fb52d41db, type: 2}
+  - {fileID: 2100000, guid: 52b8f392e4494034b934389e66141791, type: 2}
+  - {fileID: 2100000, guid: fd77f4d3275354d4b81b6248baa7f19a, type: 2}
+  - {fileID: 2100000, guid: 526e52ad2452e7a4497295774d381cc8, type: 2}
+  - {fileID: 2100000, guid: c85ec8f6c019d48478fbc3ed5d338764, type: 2}
+  - {fileID: 2100000, guid: ae9d0cc33585c3942a29b4a33b449690, type: 2}
+  - {fileID: 2100000, guid: 061b3c5aacca044ceb6d34e6d8defcdf, type: 2}
+>>>>>>> LevelDesign
