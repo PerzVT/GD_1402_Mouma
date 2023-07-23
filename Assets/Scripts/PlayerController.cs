@@ -78,6 +78,7 @@ public class PlayerController : MonoBehaviour
 
     //Animator
     [SerializeField] private Animator animator;
+    private bool Attack = false;
 
 
     private void Start()
@@ -113,6 +114,16 @@ public class PlayerController : MonoBehaviour
 
         // Dash
         PerformDash();
+
+        if (Input.GetMouseButtonDown(1) && !Attack)
+        {
+            Attack = true;
+            animator.SetTrigger("Attack");
+        }
+    }
+    public void EndAttack()
+    {
+        Attack = false;
     }
 
     private void FixedUpdate()
@@ -120,10 +131,20 @@ public class PlayerController : MonoBehaviour
         ApplyMovementForce();
 
         // Update animator parameters
-        animator.SetBool("IsWalking", isGrounded && (horizontalMovement != 0f || verticalMovement != 0f));
+        float horizontalInput = Input.GetAxisRaw("Horizontal");
+        float verticalInput = Input.GetAxisRaw("Vertical");
 
-        float speed = Mathf.Max(Mathf.Abs(horizontalMovement), Mathf.Abs(verticalMovement));
-        animator.SetFloat("Speed", speed);
+        
+        float normalizedHorizontalInput = Mathf.Clamp(horizontalInput, -1f, 1f);
+        float normalizedVerticalInput = Mathf.Clamp(verticalInput, -1f, 1f);
+
+        
+        animator.SetFloat("X", normalizedHorizontalInput);
+        animator.SetFloat("Y", normalizedVerticalInput);
+
+        
+        Vector3 moveDirection = new Vector3(horizontalInput, 0f, verticalInput).normalized;
+        transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
     }
 
     private void InitializeComponents()
@@ -317,11 +338,22 @@ public class PlayerController : MonoBehaviour
 
     private void Die()
     {
+        // Play the death animation
+        animator.SetTrigger("DieTrigger");
+
+        // Disable the player's movement and other actions during the death animation
+        rb.velocity = Vector3.zero;
+        rb.isKinematic = true;
+        enabled = false;
+
         // Implement player death behavior
         // For example, restart the level
         StartCoroutine(Restart(1));
+
     }
+
     
+
     public void BoostSpeed(int speedBoost, float boostDuration)
     {
         // Increase the player's speed
