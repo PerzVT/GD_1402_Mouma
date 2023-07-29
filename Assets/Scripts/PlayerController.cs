@@ -2,7 +2,11 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
+/// <summary>
+/// I would like to see the camera given its own class as it feels a bit off where it is and the rotation is unnatural.  I like how you have split things up into headers, as it makes it a lot more digestable.
+/// The Inputs, however, should be handle by the Input Manager (https://docs.unity3d.com/2021.3/Documentation/Manual/class-InputManager.html) and should not be down to KeyCodes. You want this to be something you could map to a controller as well as having work with a keyboard and mouse
+/// 
+/// </summary>
 public class PlayerController : MonoBehaviour
 {
     // Movement
@@ -87,7 +91,7 @@ public class PlayerController : MonoBehaviour
         InitializeCursor();
         UpdatePointsText();
         currentHealth = maxHealth;
-        UpdateHealthText();
+        UpdateHealthText(); 
         // Initialize the original speed value with the starting speed
         originalSpeed = moveSpeed;
 

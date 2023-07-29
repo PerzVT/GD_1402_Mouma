@@ -2,7 +2,9 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
 using System.Collections;
-
+/// <summary>
+/// This class is good for a start but are there going to be other kinds of enemies? This would be better being a base class for other things
+/// </summary>
 public class EnemyAI : MonoBehaviour
 {
     [Header("AI Settings")]

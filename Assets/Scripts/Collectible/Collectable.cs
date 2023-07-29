@@ -1,5 +1,8 @@
 using UnityEngine;
-
+/// <summary>
+/// For things like collectables it may make a bit more sense to keep track of the collection in the PlayerController or move that code to another script on the Player that has access to the PlayerController, just because a collectable object should not have to know about what object collects it. I would like to see the audio levels adjusted a bit better for these, as right now it is really loud.
+/// 
+/// </summary>
 public class Collectable : MonoBehaviour
 {
     [SerializeField] private AudioSource collectAudio; // Reference to the AudioSource component to play collect sound
