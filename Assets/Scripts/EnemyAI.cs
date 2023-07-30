@@ -30,6 +30,13 @@ public class EnemyAI : MonoBehaviour
     private Transform currentPatrolPoint;
     private Rigidbody rb;
 
+    //Animator
+    [SerializeField] private Animator animator;
+    [SerializeField] private float bitingRange = 2f;
+    private bool isBiting = false;
+    private PlayerController player;
+
+
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -41,6 +48,11 @@ public class EnemyAI : MonoBehaviour
         
         var chargeParticleMain = chargeParticles.main;
         chargeParticleMain.startColor = new Color(1, 1, 1, 1);
+
+        //Animator
+        animator = GetComponent<Animator>();
+        player = FindObjectOfType<PlayerController>();
+
     }
 
     private void Update()
@@ -62,6 +74,12 @@ public class EnemyAI : MonoBehaviour
                 else
                 {
                     Patrol();
+
+                    // Calculate the normalized direction vector to the current patrol point
+                    Vector3 patrolDirection = (currentPatrolPoint.position - transform.position).normalized;
+                    // Set the animator parameters based on the patrol direction
+                    animator.SetFloat("X", patrolDirection.x);
+                    animator.SetFloat("Y", patrolDirection.z);
                 }
             }
         }
@@ -71,6 +89,10 @@ public class EnemyAI : MonoBehaviour
             // Move the enemy during the charge
             rb.velocity = chargeDirection * chargeSpeed;
 
+            // Set animator parameters based on the charging direction
+            animator.SetFloat("X", chargeDirection.x);
+            animator.SetFloat("Y", chargeDirection.z);
+
             if (chargeTime <= 0)
             {
                 isCharging = false;
@@ -78,6 +100,19 @@ public class EnemyAI : MonoBehaviour
                 rb.velocity = Vector3.zero;  // Reset velocity when not charging
             }
         }
+
+        // Check if colliding with the player and trigger biting animation
+        if (distanceToTarget <= bitingRange)
+        {
+            isBiting = true;
+        }
+        else
+        {
+            isBiting = false;
+        }
+
+        // Set the "IsBiting" parameter in the animator to trigger the biting animation
+        animator.SetBool("IsBiting", isBiting);
     }
 
     private void Patrol()
@@ -98,6 +133,9 @@ public class EnemyAI : MonoBehaviour
 
         transform.LookAt(target.position);
         yield return new WaitForSeconds(1f);
+
+        // If the attack is successful and the player is bitten:
+        player.BeBitten();
 
         isCharging = true;
         agent.enabled = false;

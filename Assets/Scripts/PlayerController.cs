@@ -79,6 +79,9 @@ public class PlayerController : MonoBehaviour
     //Animator
     [SerializeField] private Animator animator;
     private bool Attack = false;
+    private bool isBitten = false;
+    [SerializeField] private int damageAmount = 10; // damage amount
+
 
 
     private void Start()
@@ -125,6 +128,18 @@ public class PlayerController : MonoBehaviour
     {
         Attack = false;
     }
+
+    public void BeBitten()
+    {
+        if (!isBitten)
+        {
+            isBitten = true;
+            animator.SetTrigger("Bitten");
+            // Implement any additional behavior when the player is bitten
+            TakeDamage(damageAmount);
+        }
+    }
+
 
     private void FixedUpdate()
     {
@@ -333,6 +348,11 @@ public class PlayerController : MonoBehaviour
         if (currentHealth <= 0)
         {
             Die();
+        }
+        else
+        {
+            // Trigger the bitten animation
+            animator.SetTrigger("Bitten");
         }
     }
 
