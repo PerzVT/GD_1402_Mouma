@@ -12,6 +12,12 @@ EditorBuildSettings:
     path: Assets/Scenes/StartScene.unity
     guid: 8582150e7c701384fb51d559076c3fe2
   - enabled: 1
+    path: Assets/Scenes/Sandbox.unity
+    guid: 365aa19f3e217334ab9654e74807c1f8
+  - enabled: 1
     path: Assets/Scenes/Perz_Maze_Fix.unity
     guid: 3617b80099aa5464b82176c7cc473d39
+  - enabled: 1
+    path: Assets/Scenes/BaseMaze.unity
+    guid: d572c93d0d6c6bf42937ba12dbf3a42e
   m_configObjects: {}
