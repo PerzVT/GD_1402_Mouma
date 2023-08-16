@@ -138,6 +138,7 @@ public class PlayerController : MonoBehaviour
             // Implement any additional behavior when the player is bitten
             TakeDamage(damageAmount);
         }
+        isBitten = false;
     }
 
 
