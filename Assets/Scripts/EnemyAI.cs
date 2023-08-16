@@ -23,19 +23,20 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] public Image exclamationMark;
     [SerializeField] public float detectionRange = 10f;
 
+    [Header("Vanish")]
+    [SerializeField] private AudioSource vanishAudio;
+
     private NavMeshAgent agent;
     private bool isCharging;
+    private bool isPouncing;
     private float chargeTime;
     private Vector3 chargeDirection;
     private Transform currentPatrolPoint;
     private Rigidbody rb;
 
-    //Animator
-    [SerializeField] private Animator animator;
-    [SerializeField] private float bitingRange = 2f;
-    private bool isBiting = false;
+    //[SerializeField] private float bitingRange = 2f;
+    //private bool isBiting = false;
     private PlayerController player;
-
 
     private void Start()
     {
@@ -45,14 +46,8 @@ public class EnemyAI : MonoBehaviour
 
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotation;
-        
-        var chargeParticleMain = chargeParticles.main;
-        chargeParticleMain.startColor = new Color(1, 1, 1, 1);
 
-        //Animator
-        animator = GetComponent<Animator>();
         player = FindObjectOfType<PlayerController>();
-
     }
 
     private void Update()
@@ -62,57 +57,29 @@ public class EnemyAI : MonoBehaviour
         float distanceToTarget = Vector3.Distance(target.position, transform.position);
         exclamationMark.enabled = (distanceToTarget <= detectionRange);
 
-        if (!isCharging)
+        if (!isCharging && !isPouncing)
         {
             if (agent.isActiveAndEnabled)
             {
                 if (distanceToTarget < chaseRange)
                 {
-                    agent.SetDestination(target.position);
-                    StartCoroutine(ChargeUp());
+                    StartCoroutine(PounceAndVanish());
                 }
                 else
                 {
                     Patrol();
-
-                    // Calculate the normalized direction vector to the current patrol point
-                    Vector3 patrolDirection = (currentPatrolPoint.position - transform.position).normalized;
-                    // Set the animator parameters based on the patrol direction
-                    animator.SetFloat("X", patrolDirection.x);
-                    animator.SetFloat("Y", patrolDirection.z);
                 }
             }
         }
-        else
-        {
-            chargeTime -= Time.deltaTime;
-            // Move the enemy during the charge
-            rb.velocity = chargeDirection * chargeSpeed;
 
-            // Set animator parameters based on the charging direction
-            animator.SetFloat("X", chargeDirection.x);
-            animator.SetFloat("Y", chargeDirection.z);
-
-            if (chargeTime <= 0)
-            {
-                isCharging = false;
-                agent.enabled = true;
-                rb.velocity = Vector3.zero;  // Reset velocity when not charging
-            }
-        }
-
-        // Check if colliding with the player and trigger biting animation
-        if (distanceToTarget <= bitingRange)
-        {
-            isBiting = true;
-        }
-        else
-        {
-            isBiting = false;
-        }
-
-        // Set the "IsBiting" parameter in the animator to trigger the biting animation
-        animator.SetBool("IsBiting", isBiting);
+        //if (distanceToTarget <= bitingRange)
+        //{
+        //    isBiting = true;
+        //}
+        //else
+        //{
+        //    isBiting = false;
+        //}
     }
 
     private void Patrol()
@@ -125,21 +92,32 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    private IEnumerator ChargeUp()
+    private IEnumerator PounceAndVanish()
     {
-        chargeParticles.Play();
-        yield return new WaitForSeconds(2f);
-        chargeParticles.Stop();
-
-        transform.LookAt(target.position);
-        yield return new WaitForSeconds(1f);
-
-        // If the attack is successful and the player is bitten:
-        player.BeBitten();
-
         isCharging = true;
+        isPouncing = true;
         agent.enabled = false;
-        chargeDirection = (target.position - transform.position).normalized;
-        chargeTime = chargeCooldown;
+
+        Vector3 pounceDirection = (target.position - transform.position).normalized;
+
+        float pounceDuration = 0.5f;
+        float elapsedTime = 0;
+
+        while (elapsedTime < pounceDuration)
+        {
+            transform.position += pounceDirection * chargeSpeed * Time.deltaTime;
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        isPouncing = false;
+        player.BeBitten();
+        Vanish();
+    }
+
+    private void Vanish()
+    {
+        vanishAudio.Play();
+        gameObject.SetActive(false);  // This will deactivate the cat object after it vanishes
     }
 }
