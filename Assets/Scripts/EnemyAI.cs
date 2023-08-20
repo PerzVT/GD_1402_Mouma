@@ -34,6 +34,7 @@ public class EnemyAI : MonoBehaviour
     private Transform currentPatrolPoint;
     private Rigidbody rb;
 
+    private Animator animator;
     //[SerializeField] private float bitingRange = 2f;
     //private bool isBiting = false;
     private PlayerController player;
@@ -48,6 +49,7 @@ public class EnemyAI : MonoBehaviour
         rb.constraints = RigidbodyConstraints.FreezeRotation;
 
         player = FindObjectOfType<PlayerController>();
+        animator = GetComponent<Animator>();
     }
 
     private void Update()
