@@ -58,6 +58,19 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private int maxHealth = 100;
     [SerializeField] private TextMeshProUGUI healthText;
 
+    [Header("Dash")]
+    [SerializeField] private float dashCooldown = 1f; // Cooldown for dashing
+    private bool canDash = true; // Dash control variable
+
+    [Header("Doors")]
+    [SerializeField] private float doorInteractionRange = 2f;
+    [SerializeField] private LayerMask doorLayerMask; // Define the layer for the doors
+
+    [Header("Win")]
+    [SerializeField] private TextMeshProUGUI winText;
+
+    private float bittenCooldown = 1f; // Cooldown for bitten response
+    private float lastBittenTime = 0f; // Time of the last bitten response
     private float horizontalMovement;
     private float verticalMovement;
     private bool isGrounded;
@@ -72,6 +85,7 @@ public class PlayerController : MonoBehaviour
     private float xRotation;
     private float yRotation;
 
+    private int keyCount = 0;
     private int pointsCounter;
     private int currentHealth;
     private float originalSpeed;
@@ -81,9 +95,6 @@ public class PlayerController : MonoBehaviour
     private bool Attack = false;
     private bool isBitten = false;
     [SerializeField] private int damageAmount = 10; // damage amount
-
-
-
     private void Start()
     {
         InitializeComponents();
@@ -97,7 +108,6 @@ public class PlayerController : MonoBehaviour
         //Animator
         animator = GetComponent<Animator>();
     }
-
     private void Update()
     {
         UpdateGroundedStatus();
@@ -115,38 +125,47 @@ public class PlayerController : MonoBehaviour
         CalculateSlopeMoveDirection();
         RestartOnFalling();
 
-        // Dash
-        PerformDash();
+        InteractWithDoor();
 
-        if (Input.GetMouseButtonDown(1) && !Attack)
+        // Dash
+        if (Input.GetKeyDown(dashKey) && canDash)
+        {
+            PerformDash();
+            StartCoroutine(DashCooldown());
+        }
+
+        if (Input.GetMouseButtonDown(1) && !Attack && animator != null)
         {
             Attack = true;
             animator.SetTrigger("Attack");
         }
+
+        //if (Input.GetMouseButtonDown(1) && !Attack)
+        //{
+        //    Attack = true;
+        //    animator.SetTrigger("Attack");
+        //}
     }
     public void EndAttack()
     {
         Attack = false;
     }
-
     public void BeBitten()
     {
-        if (!isBitten)
+        if (!isBitten && Time.time - lastBittenTime >= bittenCooldown)
         {
+            lastBittenTime = Time.time;
             isBitten = true;
-            animator.SetTrigger("Bitten");
-            // Implement any additional behavior when the player is bitten
+            if (animator != null) animator.SetTrigger("Bitten");
             TakeDamage(damageAmount);
+            isBitten = false;
         }
         isBitten = false;
     }
-
-
     private void FixedUpdate()
     {
         ApplyMovementForce();
 
-        // Update animator parameters
         float horizontalInput = Input.GetAxisRaw("Horizontal");
         float verticalInput = Input.GetAxisRaw("Vertical");
 
@@ -158,45 +177,37 @@ public class PlayerController : MonoBehaviour
         animator.SetFloat("X", normalizedHorizontalInput);
         animator.SetFloat("Y", normalizedVerticalInput);
 
-        
-        Vector3 moveDirection = new Vector3(horizontalInput, 0f, verticalInput).normalized;
-        transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
+        //Vector3 moveDirection = new Vector3(horizontalInput, 0f, verticalInput).normalized;
+        //transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
     }
-
     private void InitializeComponents()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         actualCam = cameraTransform.GetComponentInChildren<Camera>();
     }
-
     private void InitializeCursor()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
-
-    private void UpdatePointsText()
+        private void UpdatePointsText()
     {
-        pointsText.text = $"Coins: <color=green>{pointsCounter} / {pointsObjective} </color>";
+        pointsText.text = "x <color=green>" + pointsCounter.ToString() + " / " + pointsObjective.ToString() + "</color>";
     }
-
     private void UpdateGroundedStatus()
     {
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
     }
-
     private void GetInputAxes()
     {
         horizontalMovement = Input.GetAxisRaw("Horizontal");
         verticalMovement = Input.GetAxisRaw("Vertical");
     }
-
     private void CalculateMoveDirection()
     {
         moveDirection = orientation.forward * verticalMovement + orientation.right * horizontalMovement;
     }
-
     private void UpdateMouseRotation()
     {
         mouseX = Input.GetAxisRaw("Mouse X");
@@ -205,21 +216,17 @@ public class PlayerController : MonoBehaviour
         yRotation += mouseX * sensitivityX * sensitivityMultiplier;
         xRotation -= mouseY * sensitivityY * sensitivityMultiplier;
 
-        // Limit camera rotation to prevent going upside down
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
         cameraTransform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
         orientation.transform.rotation = Quaternion.Euler(0, yRotation, 0);
 
-        // Rotate the player object based on the mouse input along the y-axis
         transform.rotation = Quaternion.Euler(0, yRotation, 0);
     }
-
     private void UpdateDragBasedOnGroundedStatus()
     {
         rb.drag = isGrounded ? groundDrag : airDrag;
     }
-
     private void UpdateSprintingStatus()
     {
         if (Input.GetKey(sprintKey) && isGrounded && !(horizontalMovement.Equals(0) && verticalMovement.Equals(0)))
@@ -233,7 +240,6 @@ public class PlayerController : MonoBehaviour
             actualCam.fieldOfView = Mathf.Lerp(actualCam.fieldOfView, 80f, 10f * Time.deltaTime);
         }
     }
-
     private void PerformJump()
     {
         if (Input.GetKeyDown(jumpKey) && isGrounded)
@@ -242,24 +248,23 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
             jumpAudio.Play();
 
-            // Trigger jump animation
             animator.SetTrigger("Jump");
         }
     }
-
     private void PerformDash()
     {
-        if (Input.GetKeyDown(dashKey))
-        {
-            rb.AddForce(moveDirection.normalized * dashSpeed, ForceMode.Impulse);
-        }
+        rb.AddForce(moveDirection.normalized * dashSpeed, ForceMode.Impulse);
     }
-
+    private IEnumerator DashCooldown()
+    {
+        canDash = false;
+        yield return new WaitForSeconds(dashCooldown);
+        canDash = true;
+    }
     private void CalculateSlopeMoveDirection()
     {
         slopeMoveDirection = Vector3.ProjectOnPlane(moveDirection, slopeHit.normal);
     }
-
     private void RestartOnFalling()
     {
         if (rb.velocity.y < -14f)
@@ -267,7 +272,6 @@ public class PlayerController : MonoBehaviour
             StartCoroutine(FallGroundRestart());
         }
     }
-
     private void ApplyMovementForce()
     {
         if (isGrounded && !OnSlope())
@@ -286,23 +290,27 @@ public class PlayerController : MonoBehaviour
             rb.useGravity = true;
         }
     }
-
     private IEnumerator FallGroundRestart()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         yield return new WaitForSeconds(1);
     }
-
     public IEnumerator Restart(int seconds)
     {
-        for (int i = 0; i < 3; i++)
+        if (winText != null)
         {
-            pointsText.text = $"<color=green>You win!</color> Restarting in {seconds - i} seconds...";
-            yield return new WaitForSeconds(1);
+            winText.gameObject.SetActive(true); // Enable the win text
+
+            for (int i = 0; i < seconds; i++)
+            {
+                winText.text = $"<color=green>You win!</color> Restarting in {seconds - i} seconds...";
+                yield return new WaitForSeconds(1);
+            }
+
+            winText.gameObject.SetActive(false); // Disable the win text
         }
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
-
     public void AddScore(int value)
     {
         pointsCounter += value;
@@ -312,10 +320,8 @@ public class PlayerController : MonoBehaviour
             StartCoroutine(Restart(5));
         }
     }
-
     private bool OnSlope()
     {
-        // Check if we are on a slope by sending a raycast down
         if (Physics.Raycast(transform.position, Vector3.down, out slopeHit, playerHeight / 2 + 0.5f))
         {
             if (slopeHit.normal != Vector3.up)
@@ -325,68 +331,77 @@ public class PlayerController : MonoBehaviour
         }
         return false;
     }
-
     public void SetCursorState(CursorLockMode lockState, bool visible)
     {
         Cursor.lockState = lockState;
         Cursor.visible = visible;
     }
-
     private void UpdateHealthText()
     {
         healthText.text = $"Health: <color=green>{currentHealth}</color>";
     }
-
     public void TakeDamage(int damage)
     {
-        // Decrease player's health by the damage amount
         currentHealth -= damage;
 
-        // Update health text
         UpdateHealthText();
 
-        // Handle player death if health reaches zero
         if (currentHealth <= 0)
         {
             Die();
         }
         else
         {
-            // Trigger the bitten animation
             animator.SetTrigger("Bitten");
         }
     }
-
     private void Die()
     {
-        // Play the death animation
         animator.SetTrigger("DieTrigger");
 
-        // Disable the player's movement and other actions during the death animation
         rb.velocity = Vector3.zero;
         rb.isKinematic = true;
         enabled = false;
 
-        // Implement player death behavior
-        // For example, restart the level
         StartCoroutine(Restart(1));
-
     }
-
-    
-
     public void BoostSpeed(int speedBoost, float boostDuration)
     {
-        // Increase the player's speed
         moveSpeed += speedBoost;
 
-        // After the boost duration, reset the player's speed
         Invoke("ResetSpeed", boostDuration);
     }
-
     private void ResetSpeed()
     {
-        // Reset the player's speed to its original value
         moveSpeed = originalSpeed;
+    }
+    public void IncrementKeyCount()
+    {
+        keyCount++;
+    }
+    public int GetKeys()
+    {
+        return keyCount;
+    }
+    public void UseKeys(int numberOfKeysToUse)
+    {
+        keyCount -= numberOfKeysToUse;
+        keyCount = Mathf.Max(keyCount, 0);
+    }
+    private void InteractWithDoor()
+    {
+        Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, doorInteractionRange, doorLayerMask))
+        {
+            Door door = hit.transform.GetComponent<Door>();
+            if (door != null && keyCount > 0)
+            {
+                if (Input.GetKeyDown(KeyCode.F))
+                {
+                    door.OpenDoor();
+                }
+            }
+        }
     }
 }

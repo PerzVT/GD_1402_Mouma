@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1777466249656913025}
   - component: {fileID: 1777466249656913024}
   - component: {fileID: 1777466249656913087}
+  - component: {fileID: -8969737954176899280}
   m_Layer: 0
   m_Name: SpecialCoin
   m_TagString: Untagged
@@ -116,6 +117,24 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &-8969737954176899280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1777466249656913085}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5066499f26c477f4cb0db886980b2cda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  collectAudio: {fileID: 0}
+  rotationSpeed: {x: 0, y: 50, z: 0}
+  player: {fileID: 0}
+  speedBoost: 5
+  boostDuration: 5
+  boostText: {fileID: 0}
 --- !u!1001 &7301814681941767052
 PrefabInstance:
   m_ObjectHideFlags: 0

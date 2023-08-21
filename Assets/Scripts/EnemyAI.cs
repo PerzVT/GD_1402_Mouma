@@ -12,6 +12,9 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] public float chargeCooldown = 5f;
 
     [Header("Patrol")]
+    //[SerializeField] public float patrolRadius = 5f;
+    //[SerializeField] public float patrolSpeed = 3f;
+    //private Vector3 startPosition;
     [SerializeField] public Transform pointA;
     [SerializeField] public Transform pointB;
     [SerializeField] public float patrolSpeed = 3f;
@@ -35,14 +38,13 @@ public class EnemyAI : MonoBehaviour
     private Rigidbody rb;
 
     private Animator animator;
-    //[SerializeField] private float bitingRange = 2f;
-    //private bool isBiting = false;
     private PlayerController player;
 
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         agent.speed = patrolSpeed;
+        //startPosition = transform.position; // Store the starting position for patrol
         currentPatrolPoint = pointA;
 
         rb = GetComponent<Rigidbody>();
@@ -59,67 +61,74 @@ public class EnemyAI : MonoBehaviour
         float distanceToTarget = Vector3.Distance(target.position, transform.position);
         exclamationMark.enabled = (distanceToTarget <= detectionRange);
 
-        if (!isCharging && !isPouncing)
+        if (!isCharging && !isPouncing && agent.isActiveAndEnabled)
         {
-            if (agent.isActiveAndEnabled)
+            if (distanceToTarget < chaseRange)
             {
-                if (distanceToTarget < chaseRange)
-                {
-                    StartCoroutine(PounceAndVanish());
-                }
-                else
-                {
-                    Patrol();
-                }
+                StartCoroutine(Pounce());
+            }
+            else
+            {
+                Patrol();
+
+                // Calculate the direction in local space
+                Vector3 localDirection = transform.InverseTransformDirection(agent.velocity);
+                float forwardSpeed = localDirection.z;
+                float rightSpeed = localDirection.x;
+
+                // Update the animation parameters
+                animator.SetFloat("X", rightSpeed);
+                animator.SetFloat("Y", forwardSpeed);
             }
         }
-
-        //if (distanceToTarget <= bitingRange)
-        //{
-        //    isBiting = true;
-        //}
-        //else
-        //{
-        //    isBiting = false;
-        //}
     }
-
     private void Patrol()
     {
+        //if (Vector3.Distance(transform.position, agent.destination) < 1f)
+        //{
+        //    SetRandomDestinationWithinRadius();
+        //}
         agent.SetDestination(currentPatrolPoint.position);
-
         if (Vector3.Distance(transform.position, currentPatrolPoint.position) < 1f)
         {
             currentPatrolPoint = (currentPatrolPoint == pointA) ? pointB : pointA;
+            agent.SetDestination(currentPatrolPoint.position);
         }
     }
+    //private void SetRandomDestinationWithinRadius()
+    //{
+        // Calculate a random direction within the patrol radius
+        //Vector3 randomDirection = Random.insideUnitSphere * patrolRadius;
+        //randomDirection += startPosition;
 
-    private IEnumerator PounceAndVanish()
+        //NavMeshHit hit;
+        //NavMesh.SamplePosition(randomDirection, out hit, patrolRadius, 1);
+        //Vector3 finalPosition = hit.position;
+
+        //agent.SetDestination(finalPosition);
+    //}
+
+        private IEnumerator Pounce()
     {
         isCharging = true;
-        isPouncing = true;
         agent.enabled = false;
-
-        Vector3 pounceDirection = (target.position - transform.position).normalized;
-
-        float pounceDuration = 0.5f;
+        Vector3 dashDirection = (target.position - transform.position).normalized;
+        float dashDuration = 0.2f;
         float elapsedTime = 0;
-
-        while (elapsedTime < pounceDuration)
+        while (elapsedTime < dashDuration)
         {
-            transform.position += pounceDirection * chargeSpeed * Time.deltaTime;
+            transform.position += dashDirection * chargeSpeed * Time.deltaTime;
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-
-        isPouncing = false;
         player.BeBitten();
-        Vanish();
+        yield return Vanish();
+        isCharging = false;
     }
-
-    private void Vanish()
+    private IEnumerator Vanish()
     {
         vanishAudio.Play();
-        gameObject.SetActive(false);  // This will deactivate the cat object after it vanishes
+        gameObject.SetActive(false);
+        yield return null;
     }
 }
