@@ -15,7 +15,7 @@ public class Door : MonoBehaviour
     [SerializeField] private TextMeshProUGUI keyCounterText;
 
     [Header("Tooltip")]
-    [SerializeField] private TextMeshPro tooltipText;
+    [SerializeField] private TextMeshProUGUI tooltipText;
 
     private bool isOpening = false;
     private float openStartTime;
@@ -73,7 +73,7 @@ public class Door : MonoBehaviour
                 // Show the tooltip
                 if (tooltipText != null)
                 {
-                    tooltipText.text = "Press F to open";
+                    tooltipText.text = "Press <color=green>F</color> to open";
                     tooltipText.gameObject.SetActive(true);
                 }
             }

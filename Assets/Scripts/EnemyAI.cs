@@ -89,6 +89,7 @@ public class EnemyAI : MonoBehaviour
         //    SetRandomDestinationWithinRadius();
         //}
         agent.SetDestination(currentPatrolPoint.position);
+
         if (Vector3.Distance(transform.position, currentPatrolPoint.position) < 1f)
         {
             currentPatrolPoint = (currentPatrolPoint == pointA) ? pointB : pointA;
